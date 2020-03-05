@@ -1,0 +1,28 @@
+.rim {
+    border: 1px solid black;
+    margin: auto;
+}
+#rim1 {
+    width: 2rem;
+}
+#rim2 {
+    width: 4rem;
+}
+#rim3 {
+    width: 6rem;
+}
+#rim4 {
+    width: 8rem;
+}
+#rim5 {
+    width: 10rem;
+}
+#rim6 {
+    width: 12rem;
+}
+#rim7 {
+    width: 14rem;
+}
+#rim8 {
+    width: 16rem;
+}
