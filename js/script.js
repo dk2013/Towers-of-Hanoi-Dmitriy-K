@@ -234,12 +234,12 @@ var checkIsSuccess = () => {
 }
 
 var drawRims = () => {
-    //$("#col1, #col2, #col3").find('div.row').find('div').remove();
+    $("#col1, #col2, #col3").find('div.col-box div').remove();
     currentRims.forEach(function (value, index) {
         if(Array.isArray(value)) {
             value.forEach(function (v, i) {
-                //console.log(i, v);
-                //$('#col' + (index + 1)).find('div.row').prepend('<div id="rim' + v + '" class="rim">' + v + '</div>');
+                console.log(index, i, v);
+                $('#col' + (index + 1)).find('div.col-box').prepend('<div id="rim' + v + '" class="rim">' + v + '</div>');
             })
         }
     })
