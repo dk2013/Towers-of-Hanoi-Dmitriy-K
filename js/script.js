@@ -29,9 +29,10 @@ var node = { // node is one action
 */
 var currentNode;
 var direction; // forward or backward
-var currentAvailableActions = []; // Actions available for current node (Reverse action isn't available)
+// var currentAvailableActions = []; 
 function node(action) { // node is one action
-    this.availableActions = [], // children nodes
+    // Actions available for current node (Reverse action isn't available) - children nodes 
+    this.availableActions = {}, 
     this.parent = null,
     this.action = action;
 }
@@ -50,30 +51,38 @@ var routine = () => {
     // Increase turn
     turn++;
     console.log('--- TURN: ' + turn + ' ---');
-    var previousAction = currentNode.action;
-    console.log('Prev action: ' + previousAction);
+    //var currentAction = currentNode.action;
+    console.log('Prev action: ' + currentNode.action);
+
+    // If the array with available actions (clildren) is not empty,
+    // proceed traversal 
+    if(Object.keys(currentNode.availableActions).length > 0) {
+ 
+        //console.log("Not first checking of this node");
+        // move forw
+    } else {
+           
+        
+    }
+    // if there are children go to first child
+    // if no move back
+    getDirection();
+    console.log(direction);
+    
+    
+
     if(direction == 'forward') {
-        // Need to get actions availability (first time or returned from dead end branch)
-        console.log("Need to get actions availability");
-        getActionsAvailability();
-        removeReverseAction(previousAction);
-        // if there are children go there
-        // if no move back
+        // Moving forward here
+        console.log('Moving forward');
+
+        moveForward();
     } else if (direction == 'backward') {
-        // Mark node that we returned as dead end
+        // Mark node that we returned from as dead end
 
-
-        // If the array with available actions (clildren) is not empty,
-        // proceed traversal 
-        if(Array.isArray(currentNode.availableActions) && currentNode.availableActions.length) {
-            // Not first checking of this node
-            console.log("Not first checking of this node");
-            // move forw
-        } else {
-            // Need to proceed go backward to parent node
-            console.log("Need to proceed go backward to parent node");
-            //move back
-        }
+        // Need to proceed go backward to parent node
+        console.log("Need to proceed go backward to parent node");
+        //move back
+        
     }
     
     drawRims();
@@ -88,15 +97,75 @@ var routine = () => {
 var init = () => {
     currentRims = initialRims;
     currentNode = new node(null);
+    determineActionsAvailability();
     turn = 0;
     direction = 'forward';
-    currentAvailableActions = [];
+//    currentAvailableActions = [];
     actionTree.push(currentNode); // Push root node to tree
     console.log(actionTree);
     drawRims();
 }
 
-var getActionsAvailability = () => {
+var moveForward = () => {
+    var nextAction = parseInt(Object.keys(currentNode.availableActions)[0]); //currentNode.availableActions[0];
+    console.log(nextAction);
+    var parent = currentNode;
+    currentNode = new node(nextAction);
+    // Set parent node
+    currentNode.parent = parent;
+    console.log(parent);
+    console.log(currentNode);
+    // Set children
+    parent.availableActions[nextAction] = currentNode;
+
+    // Need to get actions availability (first time)
+    console.log("Need to get actions availability");
+    determineActionsAvailability();
+    removeReverseAction();
+    console.log('Current available actions: '); 
+    console.log(currentNode.availableActions);
+
+    moveRims(nextAction);
+}
+
+var moveRims = (action) => {
+    var col1 = currentRims[0];
+    var col2 = currentRims[1];
+    var col3 = currentRims[2];
+
+    switch(action) {
+        case 1:
+            col2.push(col1.pop());
+            break;
+        case 2:
+            col3.push(col1.pop());
+            break;
+        case 3:
+            col1.push(col2.pop());
+            break;
+        case 4:
+            col3.push(col2.pop());
+            break;
+        case 5:
+            col1.push(col3.pop());
+            break;
+        case 2:
+            col2.push(col3.pop());
+    }
+    console.log(col1, col2, col3);
+}
+
+var getDirection = () => {
+    if (Object.keys(currentNode.availableActions).length > 0) {
+        // there are available actions
+        direction = 'forward'
+    } else {
+        direction = 'backward'
+    }
+} 
+
+var determineActionsAvailability = () => {
+    var currentAvailableActions = {};
     var col1 = currentRims[0];
     var top1 = col1[col1.length - 1];
     if(typeof top1 === 'undefined') {
@@ -115,27 +184,30 @@ var getActionsAvailability = () => {
     //console.log(currentRims, top1, top2, top3);
 
     if(top1 > top2) {
-        currentAvailableActions.push(1);
+        currentAvailableActions[1] = null;
     }
     if(top1 > top3) {
-        currentAvailableActions.push(2);
+        currentAvailableActions[2] = null;
     }
     if(top2 > top1) {
-        currentAvailableActions.push(3);
+        currentAvailableActions[3] = null;
     }
     if(top2 > top3) {
-        currentAvailableActions.push(4);
+        currentAvailableActions[4] = null;
     }
     if(top3 > top1) {
-        currentAvailableActions.push(5);
+        currentAvailableActions[5] = null;
     }
     if(top3 > top2) {
-        currentAvailableActions.push(6);
+        currentAvailableActions[6] = null;
     }
+
+    currentNode.availableActions = currentAvailableActions;
 }
 
-var removeReverseAction = (reverseAction) => {
-    currentAvailableActions.splice(currentAvailableActions.indexOf(reverseAction), 1);
+var removeReverseAction = () => {
+    //currentNode.availableActions.splice(currentNode.availableActions.indexOf(currentNode.action), 1);
+    delete currentNode.availableActions[currentNode.action]
 }
 
 var checkIsSuccess = () => {
@@ -162,12 +234,12 @@ var checkIsSuccess = () => {
 }
 
 var drawRims = () => {
-    $("#col1, #col2, #col3").find('div').remove();
+    //$("#col1, #col2, #col3").find('div.row').find('div').remove();
     currentRims.forEach(function (value, index) {
         if(Array.isArray(value)) {
             value.forEach(function (v, i) {
                 //console.log(i, v);
-                $('#col' + (index + 1)).append('<div id="rim' + v + '" class="rim">' + v + '</div>');
+                //$('#col' + (index + 1)).find('div.row').prepend('<div id="rim' + v + '" class="rim">' + v + '</div>');
             })
         }
     })
