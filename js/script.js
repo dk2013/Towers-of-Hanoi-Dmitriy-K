@@ -12,7 +12,6 @@ var initialRims = [
     [],
     []
 ];
-var currentRims = []; // current rims positions for drawing
 var actionTree = [];
 var turn; // number of turn. 0 - is start position
 /*
@@ -27,7 +26,7 @@ var direction; // forward or backward
 function node(action) { // node is one action
     // Actions available for current node (Reverse action isn't available) - children nodes 
     this.availableActions = {},
-    this.rimsSnapshot = [] // to Rims state snapshot save
+    this.rimsSnapshot = [], // to Rims state snapshot save
     this.parent = null,
     this.action = action;
 }
@@ -46,8 +45,10 @@ var routine = () => {
     // Increase turn
     turn++;
     console.log('--- TURN: ' + turn + ' ---');
+
+    // var currentRims = []; // current rims positions for drawing
     //var currentAction = currentNode.action;
-    console.log('Prev action: ' + currentNode.action);
+    // console.log('Prev action: ' + currentNode.action);
 
     // If the array with available actions (clildren) is not empty,
     // proceed traversal 
@@ -70,15 +71,14 @@ var routine = () => {
 
     if(direction == 'forward') {
         // Moving forward 
-        console.log('Moving forward');
+        
 
         moveForward();
     } else if (direction == 'backward') {
         // Need to proceed go backward to parent node
-        console.log("Need to proceed go backward to parent node");
-        //move back
+        // console.log("Need to proceed go backward to parent node");
+  
         moveBackward();
-        
     }
     
     drawRims();
@@ -91,27 +91,34 @@ var routine = () => {
 }
 
 var init = () => {
-    currentRims = initialRims;
+    // currentRims = initialRims;
     currentNode = new node(null);
-    currentNode.rimsSnapshot = currentRims;
+    currentNode.rimsSnapshot = initialRims;
     determineActionsAvailability();
     turn = 0;
     direction = 'forward';
 //    currentAvailableActions = [];
     actionTree.push(currentNode); // Push root node to tree
-    console.log(actionTree);
+    // console.log(actionTree);
     drawRims();
 }
 
 var moveBackward = () => {
+    console.log('Moving backward');
+    var deadEnd = currentNode;
+    currentNode = currentNode.parent;
 
-
+    console.log(deadEnd, currentNode);
+    // Remove dead end branch
+    delete currentNode.availableActions[deadEnd.action];
+    console.log(currentNode);
     // Mark node that we returned from as dead end
 }
 
 var moveForward = () => {
+    console.log('Moving forward');
     var nextAction = parseInt(Object.keys(currentNode.availableActions)[0]); //currentNode.availableActions[0];
-    console.log(nextAction);
+    // console.log('Current (next) action: ' + nextAction);
     var parent = currentNode;
     currentNode = new node(nextAction);
     // Set parent node
@@ -124,24 +131,56 @@ var moveForward = () => {
     parent.availableActions[nextAction] = currentNode;
 
     
-
+    // Move rims to new state
     moveRims(nextAction);
 
+    // Check whether the current node has the state the same that was before, 
+    // except the root node
+    if(seekTheSameStateNode()) {
+        // Change direction. Need to go back
+        changeDirection('backward');
+        return;
+    } // if it is false it doesn't have the same state, just continue
+
     // Save rims state
-    currentNode.rimsSnapshot = currentRims;
+    // currentNode.rimsSnapshot = currentRims;
 
     // Need to get actions availability (first time in node)
-    console.log("Need to get actions availability");
+    // console.log("Need to get actions availability");
     determineActionsAvailability();
+    // remove reverse action from available action list
     removeReverseAction();
-    console.log('Current available actions: '); 
-    console.log(currentNode.availableActions);
+    // console.log('Current available actions: '); 
+    // console.log(currentNode.availableActions);
+}
+
+var seekTheSameStateNode = () => {
+    var seekNode = currentNode.parent;
+    //console.log(seekNode);
+    while(seekNode.parent != null) {
+        console.log('Seek node with the same state as the current node, except the root node');
+        // console.log(currentNode.rimsSnapshot, seekNode.rimsSnapshot);
+        if(checkArraysEqual(currentNode.rimsSnapshot, seekNode.rimsSnapshot)) {
+            console.log('seek and found');
+            console.log(currentNode.rimsSnapshot, seekNode.rimsSnapshot);
+            console.log(seekNode);
+            return true;
+        }
+        seekNode = seekNode.parent
+    }
+
+    return false;
 }
 
 var moveRims = (action) => {
-    var col1 = currentRims[0];
-    var col2 = currentRims[1];
-    var col3 = currentRims[2];
+    // Copy parents rims snapshot to current node
+    // console.log('copy');
+    // console.log(currentNode.rimsSnapshot, currentNode.parent.rimsSnapshot);
+    currentNode.parent.rimsSnapshot.forEach((v, i) => {currentNode.rimsSnapshot[i] = v.slice()})
+    var col1 = currentNode.rimsSnapshot[0];
+    var col2 = currentNode.rimsSnapshot[1];
+    var col3 = currentNode.rimsSnapshot[2];
+    // console.log(currentNode.rimsSnapshot);
 
     switch(action) {
         case 1:
@@ -162,7 +201,12 @@ var moveRims = (action) => {
         case 2:
             col2.push(col3.pop());
     }
-    console.log(col1, col2, col3);
+    // console.log(col1, col2, col3);
+}
+
+var changeDirection = (direction) => {
+    console.log('Go ' + direction);
+    direction = direction;
 }
 
 var getDirection = () => {
@@ -176,25 +220,25 @@ var getDirection = () => {
 
 var determineActionsAvailability = () => {
     var currentAvailableActions = {};
-    var col1 = currentRims[0];
+    var col1 = currentNode.rimsSnapshot[0];
     var top1 = col1[col1.length - 1];
-    console.log('top1: ' + top1);
+    // console.log('top1: ' + top1);
     if(typeof top1 === 'undefined') {
         top1 = 0;
     }
-    var col2 = currentRims[1];
+    var col2 = currentNode.rimsSnapshot[1];
     var top2 = col2[col2.length - 1];
-    console.log('top2: ' + top2);
+    // console.log('top2: ' + top2);
     if(typeof top2 === 'undefined') {
         top2 = 0;
     }
-    var col3 = currentRims[2];
+    var col3 = currentNode.rimsSnapshot[2];
     var top3 = col3[col3.length - 1];
-    console.log('top3: ' + top3);
+    // console.log('top3: ' + top3);
     if(typeof top3 === 'undefined') {
         top3 = 0;
     }
-    console.log(currentRims, top1, top2, top3);
+    // console.log(currentNode.rimsSnapshot, top1, top2, top3);
 
     if(top1 > top2) {
         currentAvailableActions[1] = null;
@@ -250,10 +294,10 @@ var removeReverseAction = () => {
 
 var checkIsSuccess = () => {
     var column = 0;
-    if(currentRims[1].length == initialRims[0].length) {
+    if(currentNode.rimsSnapshot[1].length == initialRims[0].length) {
         column = 1;
     }
-    if(currentRims[2].length == initialRims[0].length) {
+    if(currentNode.rimsSnapshot[2].length == initialRims[0].length) {
         column = 2;
     }
     if(column == 0) {
@@ -261,7 +305,7 @@ var checkIsSuccess = () => {
         return false;
     }
     for(var i = 1; i <= initialRims[0].length; i++) {
-        if(currentRims[column][i] != initialRims[0][i]) {
+        if(currentNode.rimsSnapshot[column][i] != initialRims[0][i]) {
             // gotten not equal element it is not solution
             return false;
         }
@@ -273,7 +317,7 @@ var checkIsSuccess = () => {
 
 var drawRims = () => {
     $("#col1, #col2, #col3").find('div.col-box div').remove();
-    currentRims.forEach(function (value, index) {
+    currentNode.rimsSnapshot.forEach(function (value, index) {
         if(Array.isArray(value)) {
             value.forEach(function (v, i) {
                 // console.log(index, i, v);
@@ -282,3 +326,35 @@ var drawRims = () => {
         }
     })
 }
+
+var checkArraysEqual = (arr1, arr2) => {
+    //console.log(arr1, arr2);
+    // check is array
+    if (!Array.isArray(arr1) || !Array.isArray(arr2)) {
+        return false;
+    }
+    // if length are not equal
+    if (arr1.length !== arr2.length) {
+        return false;
+    } else {
+        // comapring each element of arrays
+        for (var i = 0; i < arr1.length; i++) {
+            if (Array.isArray(arr1[i]) && Array.isArray(arr2[i])) {
+                if (arr1[i].length !== arr2[i].length) {
+                    return false;
+                } else {
+                    for (var j = 0; j < arr1[i].length; j++) {
+                        // console.log("i: " + i, "j: " + j);
+                        if (arr1[i][j] !== arr2[i][j]) {
+                            return false;
+                        }
+                    }
+                }
+            } else if (arr1[i] !== arr2[i]) {
+                // console.log("-i-: " + i);
+                return false;
+            }
+        }
+    }
+    return true;
+};
