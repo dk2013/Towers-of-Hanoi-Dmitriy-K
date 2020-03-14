@@ -35,3 +35,9 @@
     display: flex;
     flex-direction: column;
 }
+
+@media (min-width: 576px) {
+    .jumbotron {
+        padding: 2rem 2rem !important;
+    }
+}
