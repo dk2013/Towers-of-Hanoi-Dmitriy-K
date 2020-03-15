@@ -321,7 +321,8 @@ var drawRims = () => {
         if(Array.isArray(value)) {
             value.forEach(function (v, i) {
                 // console.log(index, i, v);
-                $('#col' + (index + 1)).find('div.col-box').prepend('<div id="rim' + v + '" class="rim">' + v + '</div>');
+                //$('#col' + (index + 1)).find('div.col-box').prepend('<div id="rim' + v + '" class="rim">' + v + '</div>');
+                $('#col' + (index + 1)).find('div.col-box').prepend('<div class="rim col-' + (12 - v) + '">' + v + '</div>');
             })
         }
     })

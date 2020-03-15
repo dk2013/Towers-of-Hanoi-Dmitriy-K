@@ -2,35 +2,11 @@
     border: 1px solid black;
     margin: 0 auto;
     align-self: flex-end;
+    flex-basis: 0;
+    padding-left: 0px;
+    padding-right: 0px;
 }
-#rim1 {
-    width: 16rem;
-}
-#rim2 {
-    width: 14rem;
-}
-#rim3 {
-    width: 12rem;
-}
-#rim4 {
-    width: 10rem;
-}
-#rim5 {
-    width: 8rem;
-}
-#rim6 {
-    width: 6rem;
-}
-#rim7 {
-    width: 4rem;
-}
-#rim8 {
-    width: 2rem;
-}
-.break {
-    flex-basis: 100%;
-    height: 0;
-}
+
 .col-box {
     display: flex;
     flex-direction: column;
@@ -38,8 +14,6 @@
     height: 14rem;
 }
 
-@media (min-width: 576px) {
-    .jumbotron {
-        padding: 2rem 2rem !important;
-    }
+.jumbotron {
+    padding: 1rem 1rem !important;
 }
