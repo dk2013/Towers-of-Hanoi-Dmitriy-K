@@ -30,9 +30,16 @@
         <div class="row align-items-center mb-3">
             <div class="col-4 text-center">
                 <button id="autoplay" class="btn btn-secondary">Autoplay</button>
-                <div>
-                    <input id="autoplaySpeed" data-slider-id='autoplaySpeedSlider' type="text" 
-                        data-slider-min="1" data-slider-max="3" data-slider-step="1" 
+                <div class="mt-2">
+                    <input id="autoplaySpeed" 
+                        data-slider-id='autoplaySpeedSlider' 
+                        type="text"
+                        data-provide="slider"
+                        data-slider-ticks="[1, 2, 3]"
+                        data-slider-ticks-labels='["slow", "normal", "fast"]'
+                        data-slider-min="1"
+                        data-slider-max="3"
+                        data-slider-step="1"
                         data-slider-value="2"/>
                 </div>
             </div>

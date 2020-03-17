@@ -30,7 +30,7 @@ function node(action) { // node is one action
 }
 
 var autoplayStatus = false;
-var autoplaySliderVal;
+var autoplaySliderVal = 2;
 var timer = null;
 
 $( document ).ready(function() {
@@ -46,45 +46,65 @@ $( document ).ready(function() {
         // console.log('autoplay click');
         if(autoplayStatus) {
             // autoplay is activated - disactivate it
-            $('#autoplay').text('Autoplay');
-            autoplayStatus = false;
-            
-            // Turn off timer
-            clearTimeout(timer);
+            deactivateAutoplay();
         } else {
             // autoplay is disactivated - activate it
-            $('#autoplay').text('Stop autoplay');
-            autoplayStatus = true;
-
-            // Set turn timer
-            var autoplaySpeed = 1000;
-            switch(autoplaySliderVal) {
-                case 1:
-                    autoplaySpeed = 1500;
-                    break;
-                case 2:
-                    autoplaySpeed = 500;
-                    break;
-                case 3: 
-                    autoplaySpeed = 100;
-                    break;
-            }
-            timer = setInterval(() => nextTurn(), autoplaySpeed);
+            activateAutoplay();
         }
-
-
     })
 
     // Set up Bootstrap Slider
     $('#autoplaySpeed').slider();
     $("#autoplaySpeed").on("change", function(slideEvent) {
         autoplaySliderVal = slideEvent.value.newValue;
-        console.log(autoplaySliderVal);
+        if(timer) {
+            deactivateAutoplay();
+            activateAutoplay();
+        }
     });
 
 });
 
+var activateAutoplay = () => {
+    $('#autoplay').text('Stop autoplay');
+    autoplayStatus = true;
+
+    // Set turn timer
+    var autoplaySpeed = 1000;
+    switch(autoplaySliderVal) {
+        case 1:
+            autoplaySpeed = 1500;
+            break;
+        case 2:
+            autoplaySpeed = 500;
+            break;
+        case 3: 
+            autoplaySpeed = 1;
+            break;
+    }
+    timer = setInterval(() => nextTurn(), autoplaySpeed);
+    // timer = setTimeout(function tick() {
+    //     // console.log('tick');
+    //     nextTurn();
+    //     timer = setTimeout(tick, autoplaySpeed);
+    // }, autoplaySpeed);
+}
+
+var deactivateAutoplay = () => {
+    $('#autoplay').text('Autoplay');
+    autoplayStatus = false;
+    
+    // Turn off timer
+    clearInterval(timer);
+    timer = null;
+}
+
 var nextTurn = () => {
+    if(checkIsSuccess()) {
+        console.log('end 1');
+        return true;
+    }
+
     // Increase turn counter
     turn++;
     updateTurnCounter();
@@ -104,8 +124,7 @@ var nextTurn = () => {
     drawRims();
 
     if(checkIsSuccess()) {
-        alert ("Congratulations! You've resolved the puzzle!");
-        console.log('Resolved for ' + turn + ' turns');
+        console.log('end 2');
         return true;
     }
 
@@ -120,6 +139,7 @@ var init = () => {
     turn = 0;
     updateTurnCounter();
     direction = 'forward';
+    deactivateAutoplay();
     drawRims();
 }
 
@@ -313,7 +333,18 @@ var checkIsSuccess = () => {
     }
 
     // the end of array has reached and all elements are equal, so it is the puzzle solution
+    finalization();
+
     return true;
+}
+
+var finalization = () => {
+    deactivateAutoplay();
+    var alertTimeout = setTimeout(() => {
+        alert ("Congratulations! You've resolved the puzzle!");
+    }, 100)
+      
+    console.log('Resolved for ' + turn + ' turns');
 }
 
 var drawRims = () => {
