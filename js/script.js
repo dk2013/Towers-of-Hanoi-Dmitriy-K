@@ -29,26 +29,62 @@ function node(action) { // node is one action
     this.action = action;
 }
 
+var autoplayStatus = false;
+var autoplaySliderVal;
+var timer = null;
+
 $( document ).ready(function() {
     init();
+
+    // Next turn button click
     $( '#next' ).on( "click", function() {
-        if(routine()) {
-            alert ("Congratulations! You've resolved the puzzle!");
-            console.log('Resolved by ' + turn + ' turns');
-            return;
-        }
+        nextTurn();
     })
 
-    // Init Bootstrap Slider
-    $('#ex1').slider({
-        formatter: function(value) {
-            console.log(value);
-            return 'Current value: ' + value;
+    // Autoplay button click
+    $( '#autoplay' ).on( "click", function() {
+        // console.log('autoplay click');
+        if(autoplayStatus) {
+            // autoplay is activated - disactivate it
+            $('#autoplay').text('Autoplay');
+            autoplayStatus = false;
+            
+            // Turn off timer
+            clearTimeout(timer);
+        } else {
+            // autoplay is disactivated - activate it
+            $('#autoplay').text('Stop autoplay');
+            autoplayStatus = true;
+
+            // Set turn timer
+            var autoplaySpeed = 1000;
+            switch(autoplaySliderVal) {
+                case 1:
+                    autoplaySpeed = 1500;
+                    break;
+                case 2:
+                    autoplaySpeed = 500;
+                    break;
+                case 3: 
+                    autoplaySpeed = 100;
+                    break;
+            }
+            timer = setInterval(() => nextTurn(), autoplaySpeed);
         }
+
+
+    })
+
+    // Set up Bootstrap Slider
+    $('#autoplaySpeed').slider();
+    $("#autoplaySpeed").on("change", function(slideEvent) {
+        autoplaySliderVal = slideEvent.value.newValue;
+        console.log(autoplaySliderVal);
     });
+
 });
 
-var routine = () => {
+var nextTurn = () => {
     // Increase turn counter
     turn++;
     updateTurnCounter();
@@ -68,6 +104,8 @@ var routine = () => {
     drawRims();
 
     if(checkIsSuccess()) {
+        alert ("Congratulations! You've resolved the puzzle!");
+        console.log('Resolved for ' + turn + ' turns');
         return true;
     }
 
