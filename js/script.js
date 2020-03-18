@@ -43,7 +43,6 @@ $( document ).ready(function() {
 
     // Autoplay button click
     $( '#autoplay' ).on( "click", function() {
-        // console.log('autoplay click');
         if(autoplayStatus) {
             // autoplay is activated - disactivate it
             deactivateAutoplay();
@@ -63,6 +62,11 @@ $( document ).ready(function() {
         }
     });
 
+    // Reset button click
+    $( '#reset' ).on( "click", function() {
+        // Call init
+        init();
+    })
 });
 
 var activateAutoplay = () => {
@@ -79,15 +83,10 @@ var activateAutoplay = () => {
             autoplaySpeed = 500;
             break;
         case 3: 
-            autoplaySpeed = 1;
+            autoplaySpeed = 5;
             break;
     }
     timer = setInterval(() => nextTurn(), autoplaySpeed);
-    // timer = setTimeout(function tick() {
-    //     // console.log('tick');
-    //     nextTurn();
-    //     timer = setTimeout(tick, autoplaySpeed);
-    // }, autoplaySpeed);
 }
 
 var deactivateAutoplay = () => {
@@ -101,7 +100,6 @@ var deactivateAutoplay = () => {
 
 var nextTurn = () => {
     if(checkIsSuccess()) {
-        console.log('end 1');
         return true;
     }
 
@@ -124,7 +122,6 @@ var nextTurn = () => {
     drawRims();
 
     if(checkIsSuccess()) {
-        console.log('end 2');
         return true;
     }
 
@@ -133,6 +130,7 @@ var nextTurn = () => {
 
 var init = () => {
     // Set initial values
+    $('#reset').hide();
     currentNode = new node(null);
     currentNode.rimsSnapshot = initialRims;
     determineActionsAvailability();
@@ -333,13 +331,14 @@ var checkIsSuccess = () => {
     }
 
     // the end of array has reached and all elements are equal, so it is the puzzle solution
-    finalization();
+    finalize();
 
     return true;
 }
 
-var finalization = () => {
+var finalize = () => {
     deactivateAutoplay();
+    $('#reset').show();
     var alertTimeout = setTimeout(() => {
         alert ("Congratulations! You've resolved the puzzle!");
     }, 100)

@@ -17,3 +17,7 @@
 .jumbotron {
     padding: 1rem 1rem !important;
 }
+
+#reset {
+    display: none;
+}
