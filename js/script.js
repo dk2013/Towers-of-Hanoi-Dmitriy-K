@@ -1,3 +1,5 @@
+"use strict";
+
 //////////// Actions ////////////
 // 1 - move rim from col1 to col2
 // 2 - move rim from col1 to col3
@@ -8,18 +10,18 @@
 /////////////////////////////////
 
 // Rims initial position
-var initialRims = [
+let initialRims = [
     [1,2,3,4,5,6,7,8],
     [],
     []
 ];
 
-var turn; // number of turns. 0 - is start position
+let turn; // number of turns. 0 - is start position
 
 // Current node contents Action, reference to parent node,
 // snapshot of rims position, available actions object (children nodes)
-var currentNode; 
-var direction; // traversal direction (forward or backward)
+let currentNode; 
+let direction; // traversal direction (forward or backward)
 
 function node(action) { // node is one action
     // Actions available for current node (Reverse action isn't available) - children nodes 
@@ -29,9 +31,9 @@ function node(action) { // node is one action
     this.action = action;
 }
 
-var autoplayStatus = false;
-var autoplaySliderVal = 2;
-var timer = null;
+let autoplayStatus = false;
+let autoplaySliderVal = 2;
+let timer = null;
 
 $( document ).ready(function() {
     init();
@@ -69,12 +71,12 @@ $( document ).ready(function() {
     })
 });
 
-var activateAutoplay = () => {
+let activateAutoplay = () => {
     $('#autoplay').text('Stop autoplay');
     autoplayStatus = true;
 
     // Set turn timer
-    var autoplaySpeed = 1000;
+    let autoplaySpeed = 1000;
     switch(autoplaySliderVal) {
         case 1:
             autoplaySpeed = 1500;
@@ -89,7 +91,7 @@ var activateAutoplay = () => {
     timer = setInterval(() => nextTurn(), autoplaySpeed);
 }
 
-var deactivateAutoplay = () => {
+let deactivateAutoplay = () => {
     $('#autoplay').text('Autoplay');
     autoplayStatus = false;
     
@@ -98,7 +100,7 @@ var deactivateAutoplay = () => {
     timer = null;
 }
 
-var nextTurn = () => {
+let nextTurn = () => {
     if(checkIsSuccess()) {
         return true;
     }
@@ -111,7 +113,7 @@ var nextTurn = () => {
     getDirection();
     
     // If the array with available actions (clildren) is not empty,
-    // proceed traversal and move forvard
+    // proceed traversal and move forletd
     if(direction == 'forward') {
         moveForward();
     } else if (direction == 'backward') {  
@@ -128,7 +130,7 @@ var nextTurn = () => {
     return false;
 }
 
-var init = () => {
+let init = () => {
     // Set initial values
     $('#reset').hide();
     currentNode = new node(null);
@@ -141,20 +143,20 @@ var init = () => {
     drawRims();
 }
 
-var moveBackward = () => {
+let moveBackward = () => {
     // Need to proceed go backward to parent node
     console.log('Moving backward');
-    var deadEnd = currentNode;
+    let deadEnd = currentNode;
     currentNode = currentNode.parent;
 
     // Remove dead end branch
     delete currentNode.availableActions[deadEnd.action];
 }
 
-var moveForward = () => {
+let moveForward = () => {
     console.log('Moving forward');
-    var nextAction = parseInt(Object.keys(currentNode.availableActions)[0]);
-    var parent = currentNode;
+    let nextAction = parseInt(Object.keys(currentNode.availableActions)[0]);
+    let parent = currentNode;
     currentNode = new node(nextAction);
 
     // Set parent node
@@ -181,8 +183,8 @@ var moveForward = () => {
     removeReverseAction();
 }
 
-var seekTheSameStateNode = () => {
-    var seekNode = currentNode.parent;
+let seekTheSameStateNode = () => {
+    let seekNode = currentNode.parent;
     while(seekNode.parent != null) {
         if(checkArraysEqual(currentNode.rimsSnapshot, seekNode.rimsSnapshot)) {
             // The same rims position found
@@ -194,12 +196,12 @@ var seekTheSameStateNode = () => {
     return false;
 }
 
-var moveRims = (action) => {
+let moveRims = (action) => {
     // Copy parents rims snapshot to current node
     currentNode.parent.rimsSnapshot.forEach((v, i) => {currentNode.rimsSnapshot[i] = v.slice()})
-    var col1 = currentNode.rimsSnapshot[0];
-    var col2 = currentNode.rimsSnapshot[1];
-    var col3 = currentNode.rimsSnapshot[2];
+    let col1 = currentNode.rimsSnapshot[0];
+    let col2 = currentNode.rimsSnapshot[1];
+    let col3 = currentNode.rimsSnapshot[2];
 
     switch(action) {
         case 1:
@@ -222,11 +224,11 @@ var moveRims = (action) => {
     }
 }
 
-var changeDirection = (direction) => {
+let changeDirection = (direction) => {
     direction = direction;
 }
 
-var getDirection = () => {
+let getDirection = () => {
     if (Object.keys(currentNode.availableActions).length > 0) {
         // there are available actions
         direction = 'forward'
@@ -235,23 +237,23 @@ var getDirection = () => {
     }
 } 
 
-var determineActionsAvailability = () => {
-    var currentAvailableActions = {};
+let determineActionsAvailability = () => {
+    let currentAvailableActions = {};
 
-    var col1 = currentNode.rimsSnapshot[0];
-    var top1 = col1[col1.length - 1];
+    let col1 = currentNode.rimsSnapshot[0];
+    let top1 = col1[col1.length - 1];
     if(typeof top1 === 'undefined') {
         top1 = 0;
     }
 
-    var col2 = currentNode.rimsSnapshot[1];
-    var top2 = col2[col2.length - 1];
+    let col2 = currentNode.rimsSnapshot[1];
+    let top2 = col2[col2.length - 1];
     if(typeof top2 === 'undefined') {
         top2 = 0;
     }
 
-    var col3 = currentNode.rimsSnapshot[2];
-    var top3 = col3[col3.length - 1];
+    let col3 = currentNode.rimsSnapshot[2];
+    let top3 = col3[col3.length - 1];
     if(typeof top3 === 'undefined') {
         top3 = 0;
     }
@@ -278,7 +280,7 @@ var determineActionsAvailability = () => {
     currentNode.availableActions = currentAvailableActions;
 }
 
-var removeReverseAction = () => {
+let removeReverseAction = () => {
 
     //// Reverse actions array: ////
     // Action: 1 - Reverse action: 3
@@ -289,30 +291,31 @@ var removeReverseAction = () => {
     // Action: 6 - Reverse action: 4
     ////////////////////////////////
 
+    let reverseAction;
     switch(currentNode.action) {
         case 1:
-            var reverseAction = 3;
+            reverseAction = 3;
             break;
         case 2:
-            var reverseAction = 5;
+            reverseAction = 5;
             break;
         case 3:
-            var reverseAction = 1;
+            reverseAction = 1;
             break;
         case 4:
-            var reverseAction = 6;
+            reverseAction = 6;
             break;
         case 5:
-            var reverseAction = 2;
+            reverseAction = 2;
             break;
         case 6:
-            var reverseAction = 4;
+            reverseAction = 4;
     }
     delete currentNode.availableActions[reverseAction]
 }
 
-var checkIsSuccess = () => {
-    var column = 0;
+let checkIsSuccess = () => {
+    let column = 0;
     if(currentNode.rimsSnapshot[1].length == initialRims[0].length) {
         column = 1;
     }
@@ -323,7 +326,7 @@ var checkIsSuccess = () => {
         // Not all rims are on one column
         return false;
     }
-    for(var i = 1; i <= initialRims[0].length; i++) {
+    for(let i = 1; i <= initialRims[0].length; i++) {
         if(currentNode.rimsSnapshot[column][i] != initialRims[0][i]) {
             // not equal element found, so it is not solution
             return false;
@@ -336,17 +339,17 @@ var checkIsSuccess = () => {
     return true;
 }
 
-var finalize = () => {
+let finalize = () => {
     deactivateAutoplay();
     $('#reset').show();
-    var alertTimeout = setTimeout(() => {
+    let alertTimeout = setTimeout(() => {
         alert ("Congratulations! You've resolved the puzzle!");
     }, 100)
       
     console.log('Resolved for ' + turn + ' turns');
 }
 
-var drawRims = () => {
+let drawRims = () => {
     $("#col1, #col2, #col3").find('div.col-box div').remove();
 
     currentNode.rimsSnapshot.forEach(function (value, index) {
@@ -359,7 +362,7 @@ var drawRims = () => {
     })
 }
 
-var checkArraysEqual = (arr1, arr2) => {
+let checkArraysEqual = (arr1, arr2) => {
     // check is array
     if (!Array.isArray(arr1) || !Array.isArray(arr2)) {
         return false;
@@ -370,13 +373,13 @@ var checkArraysEqual = (arr1, arr2) => {
         return false;
     } else {
         // comapring each element of arrays
-        for (var i = 0; i < arr1.length; i++) {
+        for (let i = 0; i < arr1.length; i++) {
             if (Array.isArray(arr1[i]) && Array.isArray(arr2[i])) {
                 // Subarray - comapring each element of subarrays
                 if (arr1[i].length !== arr2[i].length) {
                     return false;
                 } else {
-                    for (var j = 0; j < arr1[i].length; j++) {
+                    for (let j = 0; j < arr1[i].length; j++) {
                         if (arr1[i][j] !== arr2[i][j]) {
                             return false;
                         }
@@ -390,6 +393,6 @@ var checkArraysEqual = (arr1, arr2) => {
     return true;
 };
 
-var updateTurnCounter = () => {
+let updateTurnCounter = () => {
     $('#turn').text(turn);
 }
