@@ -326,7 +326,7 @@ let checkIsSuccess = () => {
         // Not all rims are on one column
         return false;
     }
-    for(let i = 1; i <= initialRims[0].length; i++) {
+    for(var i = 1; i <= initialRims[0].length; i++) {
         if(currentNode.rimsSnapshot[column][i] != initialRims[0][i]) {
             // not equal element found, so it is not solution
             return false;
@@ -373,13 +373,13 @@ let checkArraysEqual = (arr1, arr2) => {
         return false;
     } else {
         // comapring each element of arrays
-        for (let i = 0; i < arr1.length; i++) {
+        for (var i = 0; i < arr1.length; i++) {
             if (Array.isArray(arr1[i]) && Array.isArray(arr2[i])) {
                 // Subarray - comapring each element of subarrays
                 if (arr1[i].length !== arr2[i].length) {
                     return false;
                 } else {
-                    for (let j = 0; j < arr1[i].length; j++) {
+                    for (var j = 0; j < arr1[i].length; j++) {
                         if (arr1[i][j] !== arr2[i][j]) {
                             return false;
                         }
