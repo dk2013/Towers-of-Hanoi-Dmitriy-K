@@ -351,12 +351,12 @@ let finalize = () => {
 
 let drawRims = () => {
     $("#col1, #col2, #col3").find('div.col-box div').remove();
-
+    const totalBootstrapCols = 12;
     currentNode.rimsSnapshot.forEach(function (value, index) {
         if(Array.isArray(value)) {
             value.forEach(function (v, i) {
                 $('#col' + (index + 1)).find('div.col-box')
-                .prepend('<div class="rim col-' + (12 - v) + '">' + v + '</div>');
+                .prepend('<div class="rim col-' + (totalBootstrapCols - v) + '">' + v + '</div>');
             })
         }
     })
