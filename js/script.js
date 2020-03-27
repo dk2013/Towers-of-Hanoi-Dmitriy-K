@@ -23,7 +23,8 @@ let turn; // number of turns. 0 - is start position
 let currentNode; 
 let direction; // traversal direction (forward or backward)
 
-function node(action) { // node is one action
+// Node constructor
+function Node(action) { // node is one action
     // Actions available for current node (Reverse action isn't available) - children nodes 
     this.availableActions = {}, // contents children nodes
     this.rimsSnapshot = [], // to save Rims state snapshot
@@ -133,7 +134,7 @@ let nextTurn = () => {
 let init = () => {
     // Set initial values
     $('#reset').hide();
-    currentNode = new node(null);
+    currentNode = new Node(null);
     currentNode.rimsSnapshot = initialRims;
     determineActionsAvailability();
     turn = 0;
@@ -157,7 +158,7 @@ let moveForward = () => {
     console.log('Moving forward');
     let nextAction = parseInt(Object.keys(currentNode.availableActions)[0]);
     let parent = currentNode;
-    currentNode = new node(nextAction);
+    currentNode = new Node(nextAction);
 
     // Set parent node
     currentNode.parent = parent;
