@@ -351,11 +351,11 @@ let checkIsSuccess = (appState) => {
 let finalize = (appState) => {
     deactivateAutoplay(appState);
     $('#reset').show();
-    let alertTimeout = setTimeout(() => {
+    setTimeout(() => {
         alert ("Congratulations! You've resolved the puzzle!");
     }, 100)
       
-    console.log('Resolved for ' + turn + ' turns');
+    console.log('Resolved for ' + appState.turn + ' turns');
 }
 
 let drawRims = (node) => {
