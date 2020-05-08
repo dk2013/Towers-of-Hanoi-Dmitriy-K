@@ -1,28 +1,9 @@
 "use strict";
 
-//////////// Actions ////////////
-// 1 - move rim from col1 to col2
-// 2 - move rim from col1 to col3
-// 3 - move rim from col2 to col1
-// 4 - move rim from col2 to col3
-// 5 - move rim from col3 to col1
-// 6 - move rim from col3 to col2
-/////////////////////////////////
-
-// Rims initial position
-let initialRims = [
-    [1,2,3,4,5,6,7,8],
-    [],
-    []
-];
-
-let turn; // number of turns. 0 - is start position
-
-// Current node contents Action, reference to parent node,
-// snapshot of rims position, available actions object (children nodes)
-let currentNode; 
-let direction; // traversal direction (forward or backward)
-
+$( document ).ready(function() {
+    runApp();
+});
+    
 // Node constructor
 function Node(action) { // node is one action
     // Actions available for current node (Reverse action isn't available) - children nodes 
@@ -32,162 +13,179 @@ function Node(action) { // node is one action
     this.action = action;
 }
 
-let autoplayStatus = false;
-let autoplaySliderVal = 2;
-let timer = null;
+function runApp() {
+    // Define Application state object with common variables (in the runApp scope)
+    let appState = {
+        turn: null, // number of turns. 0 - is start position
+        currentNode: null, // Current node is the pointer to the current Node in the node list
+        direction: null, // traversal direction (forward or backward)
+        autoplayStatus: false, // On / Off the autoplay
+        autoplaySliderVal: 2, // Autoplay speed. 1 - slow, 2 - normal, 3 - fast
+        timer: null, // timer ID for setInterval
+        initialRims: [ // Rims initial position
+            [1,2,3,4,5,6,7,8],
+            [],
+            []
+        ]
+    }
 
-$( document ).ready(function() {
-    init();
+    // Init App state
+    init(appState);
 
     // Next turn button click
     $( '#next' ).on( "click", function() {
-        nextTurn();
+        nextTurn(appState);
     })
 
     // Autoplay button click
     $( '#autoplay' ).on( "click", function() {
-        if(autoplayStatus) {
+        if(appState.autoplayStatus) {
             // autoplay is activated - disactivate it
-            deactivateAutoplay();
+            deactivateAutoplay(appState);
         } else {
             // autoplay is disactivated - activate it
-            activateAutoplay();
+            activateAutoplay(appState);
         }
     })
 
     // Set up Bootstrap Slider
     $('#autoplaySpeed').slider();
     $("#autoplaySpeed").on("change", function(slideEvent) {
-        autoplaySliderVal = slideEvent.value.newValue;
-        if(timer) {
-            deactivateAutoplay();
-            activateAutoplay();
+        appState.autoplaySliderVal = slideEvent.value.newValue;
+        if(appState.timer) {
+            deactivateAutoplay(appState);
+            activateAutoplay(appState);
         }
     });
 
     // Reset button click
     $( '#reset' ).on( "click", function() {
         // Call init
-        init();
+        init(appState);
     })
-});
-
-let activateAutoplay = () => {
-    $('#autoplay').text('Stop autoplay');
-    autoplayStatus = true;
-
-    // Set turn timer
-    let autoplaySpeed = 1000;
-    switch(autoplaySliderVal) {
-        case 1:
-            autoplaySpeed = 1500;
-            break;
-        case 2:
-            autoplaySpeed = 500;
-            break;
-        case 3: 
-            autoplaySpeed = 5;
-            break;
-    }
-    timer = setInterval(() => nextTurn(), autoplaySpeed);
 }
 
-let deactivateAutoplay = () => {
+let activateAutoplay = (appState) => {
+    $('#autoplay').text('Stop autoplay');
+    appState.autoplayStatus = true;
+
+    // Set turn timer
+    let autoplaySpeed = null;
+    switch(appState.autoplaySliderVal) {
+        case 1:
+            autoplaySpeed = 1500; // Slow speed
+            break;
+        case 3: 
+            autoplaySpeed = 5; // Fast speed
+            break;
+        default:
+            autoplaySpeed = 500; // Normal speed. Value = 2
+    }
+    appState.timer = setInterval(() => nextTurn(appState), autoplaySpeed);
+}
+
+let deactivateAutoplay = (appState) => {
     $('#autoplay').text('Autoplay');
-    autoplayStatus = false;
-    
+    appState.autoplayStatus = false;
+
+    clearTimer(appState.timer);
+}
+
+let clearTimer = (timer) => {
     // Turn off timer
     clearInterval(timer);
     timer = null;
 }
 
-let nextTurn = () => {
-    if(checkIsSuccess()) {
+let nextTurn = (appState) => {
+    if(checkIsSuccess(appState)) {
         return true;
     }
 
     // Increase turn counter
-    turn++;
-    updateTurnCounter();
-    console.log('--- TURN: ' + turn + ' ---');
-
-    getDirection();
+    appState.turn++;
+    updateTurnCounter(appState.turn);
+    console.log('--- TURN: ' + appState.turn + ' ---');
+    setDirection(appState);
     
     // If the array with available actions (clildren) is not empty,
-    // proceed traversal and move forletd
-    if(direction == 'forward') {
-        moveForward();
-    } else if (direction == 'backward') {  
-        moveBackward();
+    // proceed traversal and move forward
+    if(appState.direction == 'forward') {
+        moveForward(appState);
+    } else if (appState.direction == 'backward') {  
+        moveBackward(appState);
     }
     
     // Redraw rims in new position
-    drawRims();
+    drawRims(appState.currentNode);
 
-    if(checkIsSuccess()) {
+    if(checkIsSuccess(appState)) {
         return true;
     }
 
     return false;
 }
 
-let init = () => {
+function init(appState) {
     // Set initial values
     $('#reset').hide();
-    currentNode = new Node(null);
-    currentNode.rimsSnapshot = initialRims;
-    determineActionsAvailability();
-    turn = 0;
-    updateTurnCounter();
-    direction = 'forward';
-    deactivateAutoplay();
-    drawRims();
+    let node = new Node(null);
+    node.rimsSnapshot = appState.initialRims;
+    setActionsAvailability(node);
+    appState.turn = 0;
+    updateTurnCounter(appState.turn);
+    appState.direction = 'forward';
+    deactivateAutoplay(appState);
+    drawRims(node);
+    appState.currentNode = node;
 }
 
-let moveBackward = () => {
+let moveBackward = (appState) => {
     // Need to proceed go backward to parent node
     console.log('Moving backward');
-    let deadEnd = currentNode;
-    currentNode = currentNode.parent;
+    let deadEnd = appState.currentNode;
+    let parentNode = appState.currentNode.parent;
 
     // Remove dead end branch
-    delete currentNode.availableActions[deadEnd.action];
+    delete parentNode.availableActions[deadEnd.action];
+
+    appState.currentNode = parentNode;
 }
 
-let moveForward = () => {
+let moveForward = (appState) => {
     console.log('Moving forward');
-    let nextAction = parseInt(Object.keys(currentNode.availableActions)[0]);
-    let parent = currentNode;
-    currentNode = new Node(nextAction);
+    let nextAction = parseInt(Object.keys(appState.currentNode.availableActions)[0]);
+    let parent = appState.currentNode;
+    appState.currentNode = new Node(nextAction);
 
     // Set parent node
-    currentNode.parent = parent;
+    appState.currentNode.parent = parent;
 
     // Set child
-    parent.availableActions[nextAction] = currentNode;
+    parent.availableActions[nextAction] = appState.currentNode;
 
-    // Move rims to new state (change rims position)
-    moveRims(nextAction);
+    // Change rims position
+    moveRims(appState);
 
     // Check whether the current node has the state the same that was before, 
     // except the root node
-    if(seekTheSameStateNode()) {
+    if(seekTheSameStateNode(appState.currentNode)) {
         // Change direction. Need to go back
-        changeDirection('backward');
+        appState.direction = 'backward';
         return;
     } // if it is false it doesn't have the same state, just continue
 
     // Need to get actions availability (first time in node)
-    determineActionsAvailability();
+    setActionsAvailability(appState.currentNode);
 
     // remove reverse action from available action list
-    removeReverseAction();
+    removeReverseAction(appState.currentNode);
 }
 
-let seekTheSameStateNode = () => {
-    let seekNode = currentNode.parent;
+let seekTheSameStateNode = (node) => {
+    let seekNode = node.parent;
     while(seekNode.parent != null) {
-        if(checkArraysEqual(currentNode.rimsSnapshot, seekNode.rimsSnapshot)) {
+        if(checkArraysEqual(node.rimsSnapshot, seekNode.rimsSnapshot)) {
             // The same rims position found
             return true;
         }
@@ -197,14 +195,23 @@ let seekTheSameStateNode = () => {
     return false;
 }
 
-let moveRims = (action) => {
-    // Copy parents rims snapshot to current node
-    currentNode.parent.rimsSnapshot.forEach((v, i) => {currentNode.rimsSnapshot[i] = v.slice()})
-    let col1 = currentNode.rimsSnapshot[0];
-    let col2 = currentNode.rimsSnapshot[1];
-    let col3 = currentNode.rimsSnapshot[2];
+let moveRims = (appState) => {
+    //////////// Actions ////////////
+    // 1 - move rim from col1 to col2
+    // 2 - move rim from col1 to col3
+    // 3 - move rim from col2 to col1
+    // 4 - move rim from col2 to col3
+    // 5 - move rim from col3 to col1
+    // 6 - move rim from col3 to col2
+    /////////////////////////////////
 
-    switch(action) {
+    // Copy parents rims snapshot to current node
+    appState.currentNode.parent.rimsSnapshot.forEach((v, i) => {appState.currentNode.rimsSnapshot[i] = v.slice()})
+    let col1 = appState.currentNode.rimsSnapshot[0];
+    let col2 = appState.currentNode.rimsSnapshot[1];
+    let col3 = appState.currentNode.rimsSnapshot[2];
+
+    switch(appState.currentNode.action) {
         case 1:
             col2.push(col1.pop());
             break;
@@ -220,40 +227,36 @@ let moveRims = (action) => {
         case 5:
             col1.push(col3.pop());
             break;
-        case 2:
+        case 6:
             col2.push(col3.pop());
     }
 }
 
-let changeDirection = (direction) => {
-    direction = direction;
-}
-
-let getDirection = () => {
-    if (Object.keys(currentNode.availableActions).length > 0) {
+let setDirection = (appState) => {
+    if (Object.keys(appState.currentNode.availableActions).length > 0) {
         // there are available actions
-        direction = 'forward'
+        appState.direction = 'forward'
     } else {
-        direction = 'backward'
+        appState.direction = 'backward'
     }
 } 
 
-let determineActionsAvailability = () => {
+let setActionsAvailability = (node) => {
     let currentAvailableActions = {};
 
-    let col1 = currentNode.rimsSnapshot[0];
+    let col1 = node.rimsSnapshot[0];
     let top1 = col1[col1.length - 1];
     if(typeof top1 === 'undefined') {
         top1 = 0;
     }
 
-    let col2 = currentNode.rimsSnapshot[1];
+    let col2 = node.rimsSnapshot[1];
     let top2 = col2[col2.length - 1];
     if(typeof top2 === 'undefined') {
         top2 = 0;
     }
 
-    let col3 = currentNode.rimsSnapshot[2];
+    let col3 = node.rimsSnapshot[2];
     let top3 = col3[col3.length - 1];
     if(typeof top3 === 'undefined') {
         top3 = 0;
@@ -278,11 +281,10 @@ let determineActionsAvailability = () => {
         currentAvailableActions[6] = null;
     }
 
-    currentNode.availableActions = currentAvailableActions;
+    node.availableActions = currentAvailableActions;
 }
 
-let removeReverseAction = () => {
-
+let removeReverseAction = (node) => {
     //// Reverse actions array: ////
     // Action: 1 - Reverse action: 3
     // Action: 2 - Reverse action: 5
@@ -293,7 +295,7 @@ let removeReverseAction = () => {
     ////////////////////////////////
 
     let reverseAction;
-    switch(currentNode.action) {
+    switch(node.action) {
         case 1:
             reverseAction = 3;
             break;
@@ -312,36 +314,41 @@ let removeReverseAction = () => {
         case 6:
             reverseAction = 4;
     }
-    delete currentNode.availableActions[reverseAction]
+
+    // Prevent moving to previous position
+    delete node.availableActions[reverseAction]
 }
 
-let checkIsSuccess = () => {
+let checkIsSuccess = (appState) => {
     let column = 0;
-    if(currentNode.rimsSnapshot[1].length == initialRims[0].length) {
+    let rimsSnapshot = appState.currentNode.rimsSnapshot;
+    let initialRims = appState.initialRims;
+    if(rimsSnapshot[1].length == initialRims[0].length) {
         column = 1;
     }
-    if(currentNode.rimsSnapshot[2].length == initialRims[0].length) {
+    if(rimsSnapshot[2].length == initialRims[0].length) {
         column = 2;
     }
     if(column == 0) {
         // Not all rims are on one column
         return false;
     }
-    for(var i = 1; i <= initialRims[0].length; i++) {
-        if(currentNode.rimsSnapshot[column][i] != initialRims[0][i]) {
+    let rimsArrLength = initialRims[0].length;
+    for(var i = 1; i <= rimsArrLength; i++) {
+        if(rimsSnapshot[column][i] != initialRims[0][i]) {
             // not equal element found, so it is not solution
             return false;
         }
     }
 
     // the end of array has reached and all elements are equal, so it is the puzzle solution
-    finalize();
+    finalize(appState);
 
     return true;
 }
 
-let finalize = () => {
-    deactivateAutoplay();
+let finalize = (appState) => {
+    deactivateAutoplay(appState);
     $('#reset').show();
     let alertTimeout = setTimeout(() => {
         alert ("Congratulations! You've resolved the puzzle!");
@@ -350,10 +357,11 @@ let finalize = () => {
     console.log('Resolved for ' + turn + ' turns');
 }
 
-let drawRims = () => {
+let drawRims = (node) => {
     $("#col1, #col2, #col3").find('div.col-box div').remove();
     const totalBootstrapCols = 12;
-    currentNode.rimsSnapshot.forEach(function (value, index) {
+
+    node.rimsSnapshot.forEach(function (value, index) {
         if(Array.isArray(value)) {
             value.forEach(function (v, i) {
                 $('#col' + (index + 1)).find('div.col-box')
@@ -374,13 +382,15 @@ let checkArraysEqual = (arr1, arr2) => {
         return false;
     } else {
         // comapring each element of arrays
-        for (var i = 0; i < arr1.length; i++) {
+        let arr1Length = arr1.length;
+        for (var i = 0; l < arr1Length; i++) {
             if (Array.isArray(arr1[i]) && Array.isArray(arr2[i])) {
                 // Subarray - comapring each element of subarrays
                 if (arr1[i].length !== arr2[i].length) {
                     return false;
                 } else {
-                    for (var j = 0; j < arr1[i].length; j++) {
+                    let arr1ILength = arr1[i].length;
+                    for (var j = 0; j < arr1ILength; j++) {
                         if (arr1[i][j] !== arr2[i][j]) {
                             return false;
                         }
@@ -394,6 +404,6 @@ let checkArraysEqual = (arr1, arr2) => {
     return true;
 };
 
-let updateTurnCounter = () => {
+let updateTurnCounter = (turn) => {
     $('#turn').text(turn);
 }
