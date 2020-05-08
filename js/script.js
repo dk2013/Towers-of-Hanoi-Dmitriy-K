@@ -137,6 +137,7 @@ function init(appState) {
     appState.direction = 'forward';
     deactivateAutoplay(appState);
     drawRims(node);
+    appState.currentNode = null; // Obviously delete node list after reset
     appState.currentNode = node;
 }
 
