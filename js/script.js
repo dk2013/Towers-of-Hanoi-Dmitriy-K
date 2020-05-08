@@ -383,7 +383,7 @@ let checkArraysEqual = (arr1, arr2) => {
     } else {
         // comapring each element of arrays
         let arr1Length = arr1.length;
-        for (var i = 0; l < arr1Length; i++) {
+        for (var i = 0; i < arr1Length; i++) {
             if (Array.isArray(arr1[i]) && Array.isArray(arr2[i])) {
                 // Subarray - comapring each element of subarrays
                 if (arr1[i].length !== arr2[i].length) {
